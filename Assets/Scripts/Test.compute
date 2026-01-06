@@ -6,6 +6,7 @@
 RWTexture2D<float4> Result;
 uint Width;
 uint Height;
+RWStructuredBuffer<int> Data;
 
 [numthreads(8, 8, 1)] void CSMain(uint3 id : SV_DispatchThreadID)
 {
@@ -14,5 +15,14 @@ uint Height;
     {
         return;
     }
-    Result[id.xy] = float4( id.x & id.y, (id.x & 15)/15.0, (id.y & 15)/15.0, 1.0);
+    float4 color = float4(0, 0, 0, 1.0);
+    if (Data[id.y * Width + id.x] == 1)
+    {
+        color = float4(1, 0.85, 0.47, 1.0);
+    }
+    else if (Data[id.y * Width + id.x] == 2)
+    {
+        color = float4(1, 1, 1, 1.0);
+    }
+    Result[id.xy] = color;
 }
