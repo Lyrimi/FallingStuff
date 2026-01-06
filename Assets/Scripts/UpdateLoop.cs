@@ -16,6 +16,7 @@ public class UpdateLoop : MonoBehaviour
     RenderTexture Temp;
     public int Width;
     public int Height;
+    [NonSerialized] public Vector2 ViewPortSize;
     int[] array;
 
     struct cell
@@ -25,7 +26,7 @@ public class UpdateLoop : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        setDisplayPortSize();
+        
 
         array = new int[Width * Height];
         ComputeBuffer databuffer = new(array.Length, sizeof(int));
@@ -78,7 +79,7 @@ public class UpdateLoop : MonoBehaviour
 
     }
 
-    void setDisplayPortSize()
+    void setViewPortSize()
     {
         float WToHRatio = (float)Width / (float)Height; // X/Y
         RectTransform rectTransform = GetComponent<RectTransform>();
@@ -86,16 +87,17 @@ public class UpdateLoop : MonoBehaviour
         float y = rectTransform.rect.height;
         if (Height >= Width)
         {
-            rectTransform.sizeDelta = new Vector2(y * WToHRatio, y);
+            ViewPortSize = new Vector2(y * WToHRatio, y);
         }
         else
         {
-            rectTransform.sizeDelta = new Vector2(x, x / WToHRatio);
-            print(WToHRatio);
+            ViewPortSize = new Vector2(x, x / WToHRatio);
         }
+        rectTransform.sizeDelta = ViewPortSize;
     }
-    void OnPoint(InputAction.CallbackContext context)
+
+    void OnPoint()
     {
-        print(context.ReadValue<Vector2>());
+        
     }
 }
