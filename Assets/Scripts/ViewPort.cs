@@ -3,15 +3,17 @@ using UnityEngine;
 public class ViewPort : MonoBehaviour
 {
     UpdateLoop updateLoop;
-    public Vector2 ViewPortSize;
+    SharedVariables variables;
+    Vector2 ViewPortSize;
     int width;
     int height;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        variables = GetComponent<SharedVariables>();
         updateLoop = GetComponent<UpdateLoop>();
-        width = updateLoop.Width;
-        height = updateLoop.Height;
+        width = variables.Width;
+        height = variables.Height;
         setViewPortSize();
     }
 
@@ -20,7 +22,7 @@ public class ViewPort : MonoBehaviour
     {
 
     }
-    
+
     void setViewPortSize()
     {
         float WToHRatio = (float)width / (float)height; // X/Y
@@ -36,6 +38,7 @@ public class ViewPort : MonoBehaviour
             ViewPortSize = new Vector2(x, x / WToHRatio);
         }
         rectTransform.sizeDelta = ViewPortSize;
+        variables.ViewPortSize = ViewPortSize;
     }
 
 }

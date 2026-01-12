@@ -11,12 +11,14 @@ using UnityEngine.UI;
 
 public class UpdateLoop : MonoBehaviour
 {
+    SharedVariables sharedVariables;
     public ComputeShader CompShader;
     RawImage pixeldisplay;
     RenderTexture Temp;
-    public int Width;
-    public int Height;
-    [NonSerialized] public Vector2 ViewPortSize;
+    int width;
+    int height;
+    int kernel;
+
     int[] array;
 
     struct cell
@@ -26,37 +28,21 @@ public class UpdateLoop : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        
 
-        array = new int[Width * Height];
-        ComputeBuffer databuffer = new(array.Length, sizeof(int));
-        array = SetValueAtPostion(array, 2, 1, 1);
-        array = SetValueAtPostion(array, 4, 2, 1);
-        array = SetValueAtPostion(array, 1, 1, 1);
-        array = SetValueAtPostion(array, 6, 3, 2);
-        databuffer.SetData(array);
+        sharedVariables = GetComponent<SharedVariables>();
+        width = sharedVariables.Width;
+        height = sharedVariables.Height;
 
-        pixeldisplay = GetComponent<RawImage>();
+        array = sharedVariables.Array;
 
-        RectInt area = new(0, 0, Width, Height);
-
-        Temp = new(Width, Height, 0, RenderTextureFormat.ARGB32);
+        Temp = new(width, height, 0, RenderTextureFormat.ARGB32);
 
         Temp.enableRandomWrite = true;
         Temp.filterMode = FilterMode.Point;
-
-        int kernel = CompShader.FindKernel("CSMain");
+        kernel = CompShader.FindKernel("CSMain");
         CompShader.SetTexture(kernel, "Result", Temp);
-        CompShader.SetInt("Width", Width);
-        CompShader.SetInt("Height", Height);
-        CompShader.SetBuffer(kernel, "Data", databuffer);
-        CompShader.Dispatch(kernel, (int)math.ceil(area.width / 8f), (int)math.ceil(area.height / 8f), 1);
-
-        GraphicsFence fence = Graphics.CreateGraphicsFence(GraphicsFenceType.AsyncQueueSynchronisation, SynchronisationStageFlags.PixelProcessing);
-        Graphics.WaitOnAsyncGraphicsFence(fence, SynchronisationStage.PixelProcessing);
-
-        pixeldisplay.texture = Temp;
-        databuffer.Release();
+        CompShader.SetInt("Width", width);
+        CompShader.SetInt("Height", height);
 
 
     }
@@ -69,35 +55,37 @@ public class UpdateLoop : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        ComputeBuffer databuffer = new(array.Length, sizeof(int));
+        ComputeBuffer selectedbuffer = new(array.Length, sizeof(int));
 
+        databuffer.SetData(array);
+        selectedbuffer.SetData(sharedVariables.SelectedArray);
+        pixeldisplay = GetComponent<RawImage>();
+
+        RectInt area = new(0, 0, width, height);
+        //Selected
+        CompShader.SetBuffer(kernel, "Data", databuffer);
+        CompShader.SetBuffer(kernel, "Selected", selectedbuffer);
+        CompShader.Dispatch(kernel, (int)math.ceil(area.width / 8f), (int)math.ceil(area.height / 8f), 1);
+
+        GraphicsFence fence = Graphics.CreateGraphicsFence(GraphicsFenceType.AsyncQueueSynchronisation, SynchronisationStageFlags.PixelProcessing);
+        Graphics.WaitOnAsyncGraphicsFence(fence, SynchronisationStage.PixelProcessing);
+
+        pixeldisplay.texture = Temp;
+        databuffer.Release();
+        selectedbuffer.Release();
 
     }
     int[] SetValueAtPostion(int[] array, int x, int y, int value)
     {
-        array[Width * y + x] = value;
+        array[width * y + x] = value;
         return array;
 
     }
 
-    void setViewPortSize()
-    {
-        float WToHRatio = (float)Width / (float)Height; // X/Y
-        RectTransform rectTransform = GetComponent<RectTransform>();
-        float x = rectTransform.rect.width;
-        float y = rectTransform.rect.height;
-        if (Height >= Width)
-        {
-            ViewPortSize = new Vector2(y * WToHRatio, y);
-        }
-        else
-        {
-            ViewPortSize = new Vector2(x, x / WToHRatio);
-        }
-        rectTransform.sizeDelta = ViewPortSize;
-    }
 
     void OnPoint()
     {
-        
+
     }
 }
