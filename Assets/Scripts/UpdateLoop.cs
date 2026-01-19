@@ -18,13 +18,12 @@ public class UpdateLoop : MonoBehaviour
     int width;
     int height;
     int kernel;
+    ComputeBuffer databuffer;
+    ComputeBuffer selectedbuffer;
 
     int[] array;
 
-    struct cell
-    {
-        public bool selected;
-    }
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -33,7 +32,7 @@ public class UpdateLoop : MonoBehaviour
         width = sharedVariables.Width;
         height = sharedVariables.Height;
 
-        array = sharedVariables.Array;
+        array = sharedVariables.ColorArray;
 
         Temp = new(width, height, 0, RenderTextureFormat.ARGB32);
 
@@ -43,6 +42,9 @@ public class UpdateLoop : MonoBehaviour
         CompShader.SetTexture(kernel, "Result", Temp);
         CompShader.SetInt("Width", width);
         CompShader.SetInt("Height", height);
+
+        databuffer = new(array.Length, sizeof(int));
+        selectedbuffer = new(array.Length, sizeof(int));
 
 
     }
@@ -55,9 +57,6 @@ public class UpdateLoop : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        ComputeBuffer databuffer = new(array.Length, sizeof(int));
-        ComputeBuffer selectedbuffer = new(array.Length, sizeof(int));
-
         databuffer.SetData(array);
         selectedbuffer.SetData(sharedVariables.SelectedArray);
         pixeldisplay = GetComponent<RawImage>();
@@ -72,8 +71,8 @@ public class UpdateLoop : MonoBehaviour
         Graphics.WaitOnAsyncGraphicsFence(fence, SynchronisationStage.PixelProcessing);
 
         pixeldisplay.texture = Temp;
-        databuffer.Release();
-        selectedbuffer.Release();
+        databuffer.GetData(array);
+        sharedVariables.ColorArray = array;
 
     }
     int[] SetValueAtPostion(int[] array, int x, int y, int value)
@@ -87,5 +86,11 @@ public class UpdateLoop : MonoBehaviour
     void OnPoint()
     {
 
+    }
+
+    void OnDisable()
+    {
+        databuffer.Release();
+        selectedbuffer.Release();
     }
 }

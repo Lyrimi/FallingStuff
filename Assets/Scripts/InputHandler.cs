@@ -75,6 +75,6 @@ public class InputHandler : MonoBehaviour
 
     void Click()
     {
-        variables.Array = SetValueAtPostion(variables.Array, arrayPoint.x, arrayPoint.y, 1);
+        variables.ColorArray = SetValueAtPostion(variables.ColorArray, arrayPoint.x, arrayPoint.y, 1);
     }
 }
