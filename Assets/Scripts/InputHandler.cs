@@ -38,14 +38,14 @@ public class InputHandler : MonoBehaviour
         ScaleGamepoint.y = 1 - ((1 / ScaleGameSize.y) - ScaleGamepoint.y);
         Vector2 arraySize = new(variables.Width, variables.Height);
         arrayPoint = new((int)math.floor(ScaleGamepoint.x * arraySize.x), (int)math.floor(ScaleGamepoint.y * arraySize.y)); // minues 1 for y because
-        if (ScaleGamepoint.x >= 0 && ScaleGamepoint.x <= 1 && ScaleGamepoint.y >= 0 && ScaleGamepoint.y <= 1)
+        if (IsInGameWindow(ScaleGamepoint))
         {
             variables.SelectedArray = SetValueAtPostion(variables.SelectedArray, lastArrayPoint.x, lastArrayPoint.y, 0);
             variables.SelectedArray = SetValueAtPostion(variables.SelectedArray, arrayPoint.x, arrayPoint.y, 1);
             lastArrayPoint = arrayPoint;
         }
 
-        if (clickAction.IsPressed())
+        if (clickAction.IsPressed() && IsInGameWindow(ScaleGamepoint))
         {
             Click();
         }
@@ -54,12 +54,9 @@ public class InputHandler : MonoBehaviour
 
     }
 
-    bool IsInGameWindow(Vector2 scaledPoint)
+    bool IsInGameWindow(Vector2 ScaleGamepoint)
     {
-        Vector2 gamesize = variables.ViewPortSize;
-        Vector2 ScaleGameSize = new(gamesize.x / 1920, gamesize.y / 1080); //It scales with the resoultion the canvas uses
-        print(ScaleGameSize);
-        if (0 <= scaledPoint.x && scaledPoint.x <= ScaleGameSize.x && 1 - ScaleGameSize.y <= scaledPoint.y && scaledPoint.y <= 1)
+        if (ScaleGamepoint.x >= 0 && ScaleGamepoint.x <= 1 && ScaleGamepoint.y >= 0 && ScaleGamepoint.y <= 1)
         {
             return true;
         }

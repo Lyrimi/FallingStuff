@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class Script : MonoBehaviour
@@ -18,4 +19,5 @@ public class Script : MonoBehaviour
     {
         return (1, true, 1f);
     }
+
 }

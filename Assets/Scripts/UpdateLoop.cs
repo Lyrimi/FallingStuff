@@ -19,9 +19,11 @@ public class UpdateLoop : MonoBehaviour
     int height;
     int kernel;
     ComputeBuffer databuffer;
+    ComputeBuffer checkbuffer;
     ComputeBuffer selectedbuffer;
 
     int[] array;
+    int[] checkArray;
 
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -33,6 +35,7 @@ public class UpdateLoop : MonoBehaviour
         height = sharedVariables.Height;
 
         array = sharedVariables.ColorArray;
+        checkArray = new int[array.Length];
 
         Temp = new(width, height, 0, RenderTextureFormat.ARGB32);
 
@@ -44,6 +47,7 @@ public class UpdateLoop : MonoBehaviour
         CompShader.SetInt("Height", height);
 
         databuffer = new(array.Length, sizeof(int));
+        checkbuffer = new(array.Length, sizeof(int));
         selectedbuffer = new(array.Length, sizeof(int));
 
 
@@ -57,6 +61,7 @@ public class UpdateLoop : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        checkbuffer.SetData(checkArray);
         databuffer.SetData(array);
         selectedbuffer.SetData(sharedVariables.SelectedArray);
         pixeldisplay = GetComponent<RawImage>();
@@ -65,10 +70,11 @@ public class UpdateLoop : MonoBehaviour
         //Selected
         CompShader.SetBuffer(kernel, "Data", databuffer);
         CompShader.SetBuffer(kernel, "Selected", selectedbuffer);
+        CompShader.SetBuffer(kernel, "Claims", checkbuffer);
         CompShader.Dispatch(kernel, (int)math.ceil(area.width / 8f), (int)math.ceil(area.height / 8f), 1);
 
-        GraphicsFence fence = Graphics.CreateGraphicsFence(GraphicsFenceType.AsyncQueueSynchronisation, SynchronisationStageFlags.PixelProcessing);
-        Graphics.WaitOnAsyncGraphicsFence(fence, SynchronisationStage.PixelProcessing);
+        //GraphicsFence fence = Graphics.CreateGraphicsFence(GraphicsFenceType.AsyncQueueSynchronisation, SynchronisationStageFlags.PixelProcessing);
+        //Graphics.WaitOnAsyncGraphicsFence(fence, SynchronisationStage.PixelProcessing);
 
         pixeldisplay.texture = Temp;
         databuffer.GetData(array);
@@ -83,14 +89,10 @@ public class UpdateLoop : MonoBehaviour
     }
 
 
-    void OnPoint()
-    {
-
-    }
-
     void OnDisable()
     {
         databuffer.Release();
+        checkbuffer.Release();
         selectedbuffer.Release();
     }
 }
