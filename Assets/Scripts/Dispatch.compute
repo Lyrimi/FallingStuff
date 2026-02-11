@@ -1,0 +1,26 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+
+// Important functions
+#include "Common.hlsl" // This is where everything set with the set varible are stored for some fucked up reason
+#include "Render.hlsl"
+
+// Behaivour functions
+#include "Gravity.hlsl"
+#include "Sand.hlsl"
+
+[numthreads(8, 8, 1)] void CSMain(uint3 id : SV_DispatchThreadID)
+{
+    if (GetValue(id.xy).Element_id == 1)
+    {
+        Sand(id.xy);
+    }
+    if (GetValue(id.xy).HasGravity == 1)
+    {
+        Gravity(id.xy);
+    }
+
+    Render(id.xy);
+}

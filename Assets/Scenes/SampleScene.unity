@@ -714,7 +714,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 12183fe96a887cd40b0cf3b9447723c5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UpdateLoop
-  CompShader: {fileID: 7200000, guid: 06ee5f5cf1c29724bb4cf7e27e678154, type: 3}
+  CompShader: {fileID: 7200000, guid: f6a9591e81181094ba25c260cf67ce9b, type: 3}
 --- !u!114 &1998363863
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -789,8 +789,6 @@ MonoBehaviour:
   Width: 160
   Height: 90
   ViewPortSize: {x: 0, y: 0}
-  SelectedArray: 
-  Array: 
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

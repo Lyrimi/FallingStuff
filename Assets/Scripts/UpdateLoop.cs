@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using Mono.Cecil;
 using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -18,11 +19,10 @@ public class UpdateLoop : MonoBehaviour
     int width;
     int height;
     int kernel;
+    int curentFrame = 0;
     ComputeBuffer databuffer;
     ComputeBuffer checkbuffer;
     ComputeBuffer selectedbuffer;
-
-    int[] array;
     int[] checkArray;
 
 
@@ -34,8 +34,7 @@ public class UpdateLoop : MonoBehaviour
         width = sharedVariables.Width;
         height = sharedVariables.Height;
 
-        array = sharedVariables.ColorArray;
-        checkArray = new int[array.Length];
+        checkArray = new int[sharedVariables.GameArray.Length];
 
         Temp = new(width, height, 0, RenderTextureFormat.ARGB32);
 
@@ -46,9 +45,11 @@ public class UpdateLoop : MonoBehaviour
         CompShader.SetInt("Width", width);
         CompShader.SetInt("Height", height);
 
-        databuffer = new(array.Length, sizeof(int));
-        checkbuffer = new(array.Length, sizeof(int));
-        selectedbuffer = new(array.Length, sizeof(int));
+
+
+        databuffer = new(sharedVariables.GameArray.Length, UnsafeUtility.SizeOf<Elements.Cell>());
+        checkbuffer = new(sharedVariables.GameArray.Length, sizeof(int));
+        selectedbuffer = new(sharedVariables.GameArray.Length, sizeof(int));
 
 
     }
@@ -61,14 +62,16 @@ public class UpdateLoop : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        curentFrame += 1;
         checkbuffer.SetData(checkArray);
-        databuffer.SetData(array);
+        databuffer.SetData(sharedVariables.GameArray);
         selectedbuffer.SetData(sharedVariables.SelectedArray);
         pixeldisplay = GetComponent<RawImage>();
 
         RectInt area = new(0, 0, width, height);
         //Selected
-        CompShader.SetBuffer(kernel, "Data", databuffer);
+        CompShader.SetInt("Frame", curentFrame);
+        CompShader.SetBuffer(kernel, "GameArray", databuffer);
         CompShader.SetBuffer(kernel, "Selected", selectedbuffer);
         CompShader.SetBuffer(kernel, "Claims", checkbuffer);
         CompShader.Dispatch(kernel, (int)math.ceil(area.width / 8f), (int)math.ceil(area.height / 8f), 1);
@@ -77,8 +80,7 @@ public class UpdateLoop : MonoBehaviour
         //Graphics.WaitOnAsyncGraphicsFence(fence, SynchronisationStage.PixelProcessing);
 
         pixeldisplay.texture = Temp;
-        databuffer.GetData(array);
-        sharedVariables.ColorArray = array;
+        databuffer.GetData(sharedVariables.GameArray);
 
     }
     int[] SetValueAtPostion(int[] array, int x, int y, int value)

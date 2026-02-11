@@ -63,15 +63,20 @@ public class InputHandler : MonoBehaviour
         return false;
     }
 
+    Elements.Cell[] SetValueAtPostion(Elements.Cell[] array, int x, int y, Elements.Cell value)
+    {
+        array[variables.Width * y + x] = value;
+        return array;
+
+    }
     int[] SetValueAtPostion(int[] array, int x, int y, int value)
     {
         array[variables.Width * y + x] = value;
         return array;
 
     }
-
     void Click()
     {
-        variables.ColorArray = SetValueAtPostion(variables.ColorArray, arrayPoint.x, arrayPoint.y, 1);
+        variables.GameArray = SetValueAtPostion(variables.GameArray, arrayPoint.x, arrayPoint.y, Elements.sand);
     }
 }
