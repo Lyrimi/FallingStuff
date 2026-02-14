@@ -1,5 +1,7 @@
 using System;
+using NUnit.Framework.Constraints;
 using Unity.Mathematics;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
@@ -9,7 +11,10 @@ public class InputHandler : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     InputAction pointAction;
     InputAction clickAction;
+    InputAction rClickAction;
+    InputAction spaceAction;
 
+    PausePlay pausePlay;
     SharedVariables variables;
     Vector2 ScaledPoint;
     Vector2Int arrayPoint;
@@ -17,14 +22,21 @@ public class InputHandler : MonoBehaviour
     void Start()
     {
         pointAction = InputSystem.actions.FindAction("Point");
-        variables = GetComponent<SharedVariables>();
+        spaceAction = InputSystem.actions.FindAction("PressSpace");
         clickAction = InputSystem.actions.FindAction("Click");
+        rClickAction = InputSystem.actions.FindAction("RightClick");
+        variables = GetComponent<SharedVariables>();
+        pausePlay = FindFirstObjectByType<PausePlay>();
     }
 
     // Update is called once per frame
     int e0 = 0;
     void Update()
     {
+        if (variables.CanPlayerInput == false)
+        {
+            return;
+        }
         e0++;
         Vector2 point = pointAction.ReadValue<Vector2>();
         ScaledPoint = new(point.x / Screen.width, point.y / Screen.height);
@@ -40,14 +52,24 @@ public class InputHandler : MonoBehaviour
         arrayPoint = new((int)math.floor(ScaleGamepoint.x * arraySize.x), (int)math.floor(ScaleGamepoint.y * arraySize.y)); // minues 1 for y because
         if (IsInGameWindow(ScaleGamepoint))
         {
-            variables.SelectedArray = SetValueAtPostion(variables.SelectedArray, lastArrayPoint.x, lastArrayPoint.y, 0);
-            variables.SelectedArray = SetValueAtPostion(variables.SelectedArray, arrayPoint.x, arrayPoint.y, 1);
+            variables.SelectedArray = SetValueAtPostion(variables.SelectedArray, lastArrayPoint, 0);
+            variables.SelectedArray = SetValueAtPostion(variables.SelectedArray, arrayPoint, 1);
             lastArrayPoint = arrayPoint;
         }
 
         if (clickAction.IsPressed() && IsInGameWindow(ScaleGamepoint))
         {
-            Click();
+            Click(Elements.sand);
+        }
+
+        if (rClickAction.IsPressed() && IsInGameWindow(ScaleGamepoint))
+        {
+            Click(Elements.empty);
+        }
+
+        if (spaceAction.WasPressedThisFrame())
+        {
+            pausePlay.Click();
         }
 
         //print($"{ScaleGamepoint} | ${e0}");
@@ -63,20 +85,41 @@ public class InputHandler : MonoBehaviour
         return false;
     }
 
-    Elements.Cell[] SetValueAtPostion(Elements.Cell[] array, int x, int y, Elements.Cell value)
+    Elements.Cell[] SetValueAtPostion(Elements.Cell[] array, Vector2Int pos, Elements.Cell value)
     {
-        array[variables.Width * y + x] = value;
+        array[variables.Width * pos.y + pos.x] = value;
         return array;
 
     }
-    int[] SetValueAtPostion(int[] array, int x, int y, int value)
+    int[] SetValueAtPostion(int[] array, Vector2Int pos, int value)
     {
-        array[variables.Width * y + x] = value;
+        array[variables.Width * pos.y + pos.x] = value;
         return array;
 
     }
-    void Click()
+    void Click(Elements.Cell cell)
     {
-        variables.GameArray = SetValueAtPostion(variables.GameArray, arrayPoint.x, arrayPoint.y, Elements.sand);
+        int radius = variables.DrawRadius;
+        int SquareLength = radius * 2 + 1;
+        for (int x = 0; x < SquareLength; x++)
+        {
+            for (int y = 0; y < SquareLength; y++)
+            {
+                Vector2Int offset = new(x - radius, y - radius);
+                Vector2Int CurrentGamePoint = arrayPoint + offset;
+                if (CurrentGamePoint.y < 0 || CurrentGamePoint.x < 0 || CurrentGamePoint.y > variables.Height - 1 || CurrentGamePoint.x > variables.Width - 1)
+                {
+                    continue;
+                }
+
+                //Check if point is within circle
+                if (offset.sqrMagnitude <= radius * radius)
+                {
+                    variables.GameArray = SetValueAtPostion(variables.GameArray, CurrentGamePoint, cell);
+                }
+            }
+        }
+
+        // variables.GameArray = SetValueAtPostion(variables.GameArray, arrayPoint.x, arrayPoint.y, Elements.sand);
     }
 }

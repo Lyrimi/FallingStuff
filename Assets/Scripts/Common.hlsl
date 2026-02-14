@@ -26,6 +26,7 @@ uint Frame;
 RWStructuredBuffer<int> Claims;
 RWStructuredBuffer<int> Selected;
 RWStructuredBuffer<Cell> GameArray;
+RWStructuredBuffer<Cell> BufferGameArray;
 
 float RandomSeed(uint seed, int2 pos)
 {
@@ -47,7 +48,7 @@ Cell GetValue(int2 pos)
 
 void SetValue(int2 pos, Cell value)
 {
-    GameArray[pos.y * Width + pos.x] = value;
+    BufferGameArray[pos.y * Width + pos.x] = value;
 }
 
 bool IsClaimed(int2 pos)
@@ -64,7 +65,7 @@ bool IsClaimed(int2 pos)
 
 bool CheckEmpty(int2 pos)
 {
-    if (pos.y < 0 || pos.x < 0 || pos.y > Height || pos.x > Width)
+    if (pos.y < 0 || pos.x < 0 || pos.y > Height - 1 || pos.x > Width - 1)
     {
         return false;
     }

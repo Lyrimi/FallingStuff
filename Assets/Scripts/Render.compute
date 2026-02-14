@@ -1,6 +1,11 @@
 // Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
 #include "Common.hlsl"
+
 RWTexture2D<float4> Result;
+
+uint renderMode;
 
 bool IsSelected(int2 pos)
 {
@@ -15,5 +20,24 @@ void Render(int2 cellPos)
         return;
     }
     float3 color = GetValue(cellPos).Color;
+
+    if (renderMode == 1)
+    {
+        if (GetValue(cellPos).Element_id == 1)
+        {
+            color = float3(1.0, 0, 0);
+        }
+        else
+        {
+            color = float3(0, 1.0, 0);
+        }
+    }
+
     Result[cellPos] = float4(color.x, color.y, color.z, 1.0);
+}
+
+[numthreads(8, 8, 1)] void CSMain(uint3 id : SV_DispatchThreadID)
+{
+    Render(id.xy);
+    // Result[id.xy] = float4(id.x / 320.0, id.y / 160.0, 0, 1.0);
 }

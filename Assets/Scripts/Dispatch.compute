@@ -5,22 +5,31 @@
 
 // Important functions
 #include "Common.hlsl" // This is where everything set with the set varible are stored for some fucked up reason
-#include "Render.hlsl"
+// #include "Render.hlsl"
 
 // Behaivour functions
 #include "Gravity.hlsl"
 #include "Sand.hlsl"
 
+bool IsPaused;
+
 [numthreads(8, 8, 1)] void CSMain(uint3 id : SV_DispatchThreadID)
 {
-    if (GetValue(id.xy).Element_id == 1)
+    // Skip Physics if game is paused
+    if (IsPaused)
     {
-        Sand(id.xy);
+        // Render(id.xy);
+        return;
     }
+
     if (GetValue(id.xy).HasGravity == 1)
     {
         Gravity(id.xy);
     }
+    if (GetValue(id.xy).Element_id == 1)
+    {
+        Sand(id.xy);
+    }
 
-    Render(id.xy);
+    // Render(id.xy);
 }

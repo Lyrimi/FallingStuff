@@ -3,5 +3,5 @@
 
 void Gravity(int2 cellPos)
 {
-    TryMove(cellPos, (cellPos.x, cellPos.y - 1));
+    TryMove(cellPos, int2(cellPos.x, cellPos.y - 1));
 }
