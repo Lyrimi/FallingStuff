@@ -34,12 +34,14 @@ public class UpdateLoop : MonoBehaviour
     {
 
         sharedVariables = GetComponent<SharedVariables>();
+        pixeldisplay = GetComponent<RawImage>();
         Init();
 
     }
 
     public void Init()
     {
+        RelaseBuffers();
         width = sharedVariables.Width;
         height = sharedVariables.Height;
 
@@ -84,7 +86,6 @@ public class UpdateLoop : MonoBehaviour
         gameData.SetData(sharedVariables.GameArray);
         bufferGameData.SetData(sharedVariables.GameArray);
         selectedbuffer.SetData(sharedVariables.SelectedArray);
-        pixeldisplay = GetComponent<RawImage>();
 
         RectInt area = new(0, 0, width, height);
 
@@ -115,21 +116,19 @@ public class UpdateLoop : MonoBehaviour
         }
 
 
-        //Retrive data from Physics shader
-        bufferGameData.GetData(sharedVariables.GameArray);
+
 
         //Set RenderShaders variables
-        RenderShader.SetBuffer(renderKernel, "GameArray", gameData);
+        RenderShader.SetBuffer(renderKernel, "GameArray", bufferGameData);
         RenderShader.SetBuffer(renderKernel, "Selected", selectedbuffer);
         RenderShader.SetInt("renderMode", sharedVariables.renderMode);
 
         RenderShader.Dispatch(renderKernel, (int)math.ceil(area.width / 8f), (int)math.ceil(area.height / 8f), 1);
 
-        //Some code i don't understand but it makes the game wait for the render shader to finish
-        GraphicsFence fence = Graphics.CreateGraphicsFence(GraphicsFenceType.AsyncQueueSynchronisation, SynchronisationStageFlags.PixelProcessing);
-        Graphics.WaitOnAsyncGraphicsFence(fence, SynchronisationStage.PixelProcessing);
-
         pixeldisplay.texture = Temp;
+
+        //Retrive data from Physics shader
+        bufferGameData.GetData(sharedVariables.GameArray);
 
     }
     int[] SetValueAtPostion(int[] array, int x, int y, int value)
@@ -142,6 +141,15 @@ public class UpdateLoop : MonoBehaviour
 
     void OnDisable()
     {
+        RelaseBuffers();
+    }
+
+    void RelaseBuffers()
+    {
+        if (gameData == null)
+        {
+            return;
+        }
         gameData.Release();
         bufferGameData.Release();
         checkbuffer.Release();
