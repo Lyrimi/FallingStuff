@@ -13,18 +13,22 @@ public class InputHandler : MonoBehaviour
     InputAction clickAction;
     InputAction rClickAction;
     InputAction spaceAction;
+    InputAction scrollAction;
+    float scrollValue;
 
     PausePlay pausePlay;
     SharedVariables variables;
     Vector2 ScaledPoint;
     Vector2Int arrayPoint;
     Vector2Int lastArrayPoint = new(1, 1);
+    int lastDrawRadius = 0;
     void Start()
     {
         pointAction = InputSystem.actions.FindAction("Point");
         spaceAction = InputSystem.actions.FindAction("PressSpace");
         clickAction = InputSystem.actions.FindAction("Click");
         rClickAction = InputSystem.actions.FindAction("RightClick");
+        scrollAction = InputSystem.actions.FindAction("ScrollWheel");
         variables = GetComponent<SharedVariables>();
         pausePlay = FindFirstObjectByType<PausePlay>();
     }
@@ -37,6 +41,13 @@ public class InputHandler : MonoBehaviour
         {
             return;
         }
+
+        scrollValue = scrollAction.ReadValue<Vector2>().y;
+        if (scrollValue != 0)
+        {
+            Scroll();
+        }
+
         e0++;
         Vector2 point = pointAction.ReadValue<Vector2>();
         ScaledPoint = new(point.x / Screen.width, point.y / Screen.height);
@@ -50,16 +61,18 @@ public class InputHandler : MonoBehaviour
         ScaleGamepoint.y = 1 - ((1 / ScaleGameSize.y) - ScaleGamepoint.y);
         Vector2 arraySize = new(variables.Width, variables.Height);
         arrayPoint = new((int)math.floor(ScaleGamepoint.x * arraySize.x), (int)math.floor(ScaleGamepoint.y * arraySize.y)); // minues 1 for y because
+
         if (IsInGameWindow(ScaleGamepoint))
         {
-            variables.SelectedArray = SetValueAtPostion(variables.SelectedArray, lastArrayPoint, 0);
-            variables.SelectedArray = SetValueAtPostion(variables.SelectedArray, arrayPoint, 1);
+            drawAreaCircle(true, lastDrawRadius + 1);
+            drawAreaCircle(false, variables.DrawRadius + 1);
             lastArrayPoint = arrayPoint;
+            lastDrawRadius = variables.DrawRadius;
         }
 
         if (clickAction.IsPressed() && IsInGameWindow(ScaleGamepoint))
         {
-            Click(Elements.sand);
+            Click(variables.SelectedElement);
         }
 
         if (rClickAction.IsPressed() && IsInGameWindow(ScaleGamepoint))
@@ -113,7 +126,7 @@ public class InputHandler : MonoBehaviour
                 }
 
                 //Check if point is within circle
-                if (offset.sqrMagnitude <= radius * radius)
+                if (offset.magnitude - 0.5f <= radius)
                 {
                     variables.GameArray = SetValueAtPostion(variables.GameArray, CurrentGamePoint, cell);
                 }
@@ -121,5 +134,75 @@ public class InputHandler : MonoBehaviour
         }
 
         // variables.GameArray = SetValueAtPostion(variables.GameArray, arrayPoint.x, arrayPoint.y, Elements.sand);
+    }
+    void Scroll()
+    {
+        if (scrollValue > 0.01)
+        {
+            variables.DrawRadius += 1;
+        }
+        if (scrollValue < -0.01)
+        {
+            variables.DrawRadius -= 1;
+            if (variables.DrawRadius < 0)
+            {
+                variables.DrawRadius = 0;
+            }
+        }
+    }
+
+    void drawAreaCircle(bool clear, int radius)
+    {
+        int x = 0; int y = radius;
+
+        while (x < y)
+        {
+            float ymid = y + 0.5f;
+            if ((ymid * ymid + x * x) > radius * radius)
+            {
+                y -= 1;
+            }
+
+            setSeleced8Way(new(x, y));
+            x += 1;
+        }
+        setSelected(new(0, 0));
+
+        void setSelected(Vector2Int RelativePos)
+        {
+
+            if (clear)
+            {
+                Vector2Int CurrentGamePoint = RelativePos + lastArrayPoint;
+                if (CurrentGamePoint.y < 0 || CurrentGamePoint.x < 0 || CurrentGamePoint.y > variables.Height - 1 || CurrentGamePoint.x > variables.Width - 1)
+                {
+                    return;
+                }
+                variables.SelectedArray = SetValueAtPostion(variables.SelectedArray, lastArrayPoint + RelativePos, 0);
+            }
+            else
+            {
+                Vector2Int CurrentGamePoint = RelativePos + arrayPoint;
+                if (CurrentGamePoint.y < 0 || CurrentGamePoint.x < 0 || CurrentGamePoint.y > variables.Height - 1 || CurrentGamePoint.x > variables.Width - 1)
+                {
+                    return;
+                }
+                variables.SelectedArray = SetValueAtPostion(variables.SelectedArray, arrayPoint + RelativePos, 1);
+            }
+        }
+
+        void setSeleced8Way(Vector2Int pos)
+        {
+            setSelected(new(+pos.x, +pos.y));
+            setSelected(new(+pos.x, -pos.y));
+            setSelected(new(-pos.x, +pos.y));
+            setSelected(new(-pos.x, -pos.y));
+
+            setSelected(new(+pos.y, +pos.x));
+            setSelected(new(+pos.y, -pos.x));
+            setSelected(new(-pos.y, +pos.x));
+            setSelected(new(-pos.y, -pos.x));
+        }
+
     }
 }

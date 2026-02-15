@@ -10,6 +10,8 @@
 // Behaivour functions
 #include "Gravity.hlsl"
 #include "Sand.hlsl"
+#include "Water.hlsl"
+#include "Displacment.hlsl"
 
 bool IsPaused;
 
@@ -22,14 +24,26 @@ bool IsPaused;
         return;
     }
 
-    if (GetValue(id.xy).HasGravity == 1)
+    if (CheckDisplacement(id.xy))
     {
-        Gravity(id.xy);
+        // SetValue(id.xy, (Cell)0);
+        DoDisplacment(id.xy);
+
+        return;
     }
+
     if (GetValue(id.xy).Element_id == 1)
     {
         Sand(id.xy);
     }
+    if (GetValue(id.xy).Element_id == 3)
+    {
+        Water(id.xy);
+    }
 
+    if (GetValue(id.xy).HasGravity == 1)
+    {
+        Gravity(id.xy);
+    }
     // Render(id.xy);
 }

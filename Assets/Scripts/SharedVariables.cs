@@ -9,10 +9,12 @@ public class SharedVariables : MonoBehaviour
     public int Height;
     public Vector2 ViewPortSize;
     public int DrawRadius;
-    public bool CanPlayerInput = true;
+    [NonSerialized] public bool CanPlayerInput = true;
     [NonSerialized] public int[] SelectedArray;
     [NonSerialized] public int[] ColorArray;
     [NonSerialized] public Elements.Cell[] GameArray;
+    [NonSerialized] public Elements.Cell SelectedElement;
+
 
     [Header("In GameDebug tools")]
     public bool Paused;
@@ -24,6 +26,7 @@ public class SharedVariables : MonoBehaviour
 
     void Start()
     {
+        SelectedElement = Elements.water;
         InitVariables();
 
     }
