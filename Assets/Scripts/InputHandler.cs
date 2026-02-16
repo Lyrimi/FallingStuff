@@ -34,7 +34,6 @@ public class InputHandler : MonoBehaviour
     }
 
     // Update is called once per frame
-    int e0 = 0;
     void Update()
     {
         if (variables.CanPlayerInput == false)
