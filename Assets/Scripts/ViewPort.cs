@@ -18,9 +18,6 @@ public class ViewPort : MonoBehaviour
         updateLoop = GetComponent<UpdateLoop>();
 
         rectTransform = GetComponent<RectTransform>();
-        width = variables.Width;
-        height = variables.Height;
-        WToHRatio = (float)width / (float)height; // X/Y
 
         x = rectTransform.rect.width;
         y = rectTransform.rect.height;
@@ -36,6 +33,9 @@ public class ViewPort : MonoBehaviour
     public void setViewPortSize()
     {
 
+        width = variables.Width;
+        height = variables.Height;
+        WToHRatio = (float)width / (float)height; // X/Y
         if (height >= width)
         {
             ViewPortSize = new Vector2(y * WToHRatio, y);
@@ -44,6 +44,8 @@ public class ViewPort : MonoBehaviour
         {
             ViewPortSize = new Vector2(x, x / WToHRatio);
         }
+        print(ViewPortSize);
+        print(rectTransform.sizeDelta);
         rectTransform.sizeDelta = ViewPortSize;
         variables.ViewPortSize = ViewPortSize;
     }
