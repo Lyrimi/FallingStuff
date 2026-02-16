@@ -44,8 +44,6 @@ public class ViewPort : MonoBehaviour
         {
             ViewPortSize = new Vector2(x, x / WToHRatio);
         }
-        print(ViewPortSize);
-        print(rectTransform.sizeDelta);
         rectTransform.sizeDelta = ViewPortSize;
         variables.ViewPortSize = ViewPortSize;
     }

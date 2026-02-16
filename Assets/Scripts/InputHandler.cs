@@ -48,7 +48,6 @@ public class InputHandler : MonoBehaviour
             Scroll();
         }
 
-        e0++;
         Vector2 point = pointAction.ReadValue<Vector2>();
         ScaledPoint = new(point.x / Screen.width, point.y / Screen.height);
 

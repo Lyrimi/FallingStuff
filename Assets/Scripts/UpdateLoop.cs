@@ -86,8 +86,6 @@ public class UpdateLoop : MonoBehaviour
         bufferGameData.SetData(sharedVariables.GameArray);
         selectedbuffer.SetData(sharedVariables.SelectedArray);
 
-        RectInt area = new(0, 0, width, height);
-
         CompShader.SetInt("Frame", curentFrame);
         CompShader.SetBuffer(kernel, "GameArray", gameData);
         CompShader.SetBuffer(kernel, "BufferGameArray", bufferGameData);
@@ -111,7 +109,7 @@ public class UpdateLoop : MonoBehaviour
 
         if (FrezeGame == false)
         {
-            CompShader.Dispatch(kernel, (int)math.ceil(area.width / 8f), (int)math.ceil(area.height / 8f), 1);
+            CompShader.Dispatch(kernel, (int)math.ceil(width / 8f), (int)math.ceil(height / 8f), 1);
         }
 
 
@@ -122,7 +120,7 @@ public class UpdateLoop : MonoBehaviour
         RenderShader.SetBuffer(renderKernel, "Selected", selectedbuffer);
         RenderShader.SetInt("renderMode", sharedVariables.renderMode);
 
-        RenderShader.Dispatch(renderKernel, (int)math.ceil(area.width / 8f), (int)math.ceil(area.height / 8f), 1);
+        RenderShader.Dispatch(renderKernel, (int)math.ceil(width / 8f), (int)math.ceil(height / 8f), 1);
 
         pixeldisplay.texture = Temp;
 

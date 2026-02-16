@@ -17,16 +17,8 @@ bool IsPaused;
 
 [numthreads(8, 8, 1)] void CSMain(uint3 id : SV_DispatchThreadID)
 {
-    // Skip Physics if game is paused
-    if (IsPaused)
-    {
-        // Render(id.xy);
-        return;
-    }
-
     if (CheckDisplacement(id.xy))
     {
-        // SetValue(id.xy, (Cell)0);
         DoDisplacment(id.xy);
 
         return;
