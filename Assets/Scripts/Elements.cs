@@ -1,6 +1,5 @@
 using System.Collections;
 using Unity.Mathematics;
-using UnityEditor.U2D.Aseprite;
 using UnityEngine;
 
 public static class Elements

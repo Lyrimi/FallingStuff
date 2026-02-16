@@ -16,14 +16,15 @@ public class ViewPort : MonoBehaviour
     {
         variables = GetComponent<SharedVariables>();
         updateLoop = GetComponent<UpdateLoop>();
-        setViewPortSize();
-        RectTransform rectTransform = GetComponent<RectTransform>();
+
+        rectTransform = GetComponent<RectTransform>();
         width = variables.Width;
         height = variables.Height;
         WToHRatio = (float)width / (float)height; // X/Y
 
         x = rectTransform.rect.width;
         y = rectTransform.rect.height;
+        setViewPortSize();
     }
 
     // Update is called once per frame
